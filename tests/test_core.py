@@ -40,3 +40,7 @@ def test_no_overlap():
 def test_rule_parser():
     r = _parse_rules("finish report tomorrow 2h urgent\nbuy milk", MON.astimezone(TZ))
     assert len(r) == 2 and r[0]["importance"] == 5 and r[0]["est_minutes"] == 120 and r[0]["due"]
+
+def test_rule_parser_ignores_chatter():
+    assert _parse_rules("hello", MON.astimezone(TZ)) == []
+    assert len(_parse_rules("hey\ncall mom", MON.astimezone(TZ))) == 1

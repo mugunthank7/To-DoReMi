@@ -48,6 +48,8 @@ def _parse_rules(text, now):
         if not line:
             continue
         low = line.lower()
+        if re.fullmatch(r"(hi|hello|hey|yo|ok|okay|thanks|thank you|thx|test|help|\?)[.! ]*", low):
+            continue   # chatter, not a task
         importance = 5 if re.search(r"urgent|asap|critical|!!", low) else 4 if "important" in low else 3
         est = 30
         if m := re.search(r"(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours)\b", low):
