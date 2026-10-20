@@ -44,3 +44,16 @@ def test_rule_parser():
 def test_rule_parser_ignores_chatter():
     assert _parse_rules("hello", MON.astimezone(TZ)) == []
     assert len(_parse_rules("hey\ncall mom", MON.astimezone(TZ))) == 1
+
+def test_llm_chain_and_cap(tmp_path, monkeypatch):
+    import app.parser as P, app.db as D
+    monkeypatch.setattr(D, "DB_PATH", str(tmp_path / "t.db"))
+    monkeypatch.setattr(P, "GROQ_API_KEY", "k"); monkeypatch.setattr(P, "GEMINI_API_KEY", "k")
+    def boom(*a): raise RuntimeError("down")
+    monkeypatch.setattr(P, "_groq", boom)
+    monkeypatch.setattr(P, "_gemini", lambda *a: '{"tasks":[{"title":"Pay rent","est_minutes":10,"importance":5}]}')
+    monkeypatch.setattr(P, "LLM_DAILY_CAP", 2)
+    # calls 1 (groq fails, gemini counted as 2nd) -> works via gemini
+    assert P.parse_message("pay rent")[0]["title"] == "Pay rent"
+    # cap reached -> rules fallback, still returns the task
+    assert P.parse_message("pay rent")[0]["title"] == "pay rent"

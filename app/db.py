@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   slot_end TEXT,
   event_id TEXT             -- Outlook event id
 );
+CREATE TABLE IF NOT EXISTS usage (day TEXT PRIMARY KEY, calls INTEGER NOT NULL DEFAULT 0);
 """
 
 def conn():
@@ -54,3 +55,11 @@ def update_task(task_id, **fields):
 def delete_task(task_id):
     with conn() as c:
         c.execute("DELETE FROM tasks WHERE id=?", (task_id,))
+
+def try_use_llm(cap):
+    """Atomically count one model call for today; False once the daily cap is reached."""
+    day = datetime.now(timezone.utc).date().isoformat()
+    with conn() as c:
+        c.execute("INSERT OR IGNORE INTO usage(day, calls) VALUES (?, 0)", (day,))
+        cur = c.execute("UPDATE usage SET calls = calls + 1 WHERE day=? AND calls < ?", (day, cap))
+        return cur.rowcount == 1

@@ -10,6 +10,14 @@ WhatsApp message → tasks (Claude extracts title/deadline/duration/importance) 
     .venv/bin/uvicorn app.main:app --port 8000     # UI at http://localhost:8000
     .venv/bin/python -m pytest
 
+## LLM (free)
+Get a free key from console.groq.com and one from Google AI Studio (aistudio.google.com), put them in `.env`. Order: Groq → Gemini → keyword rules.
+
+### Budget safety
+- Create both keys **without adding a payment method**. A free-tier key with no billing attached can't charge you; it just rate-limits.
+- Don't upgrade Groq to a paid tier, and don't link a billing account to the Google Cloud project behind the Gemini key.
+- The app also stops calling models after `LLM_DAILY_CAP` calls a day (default 150) and falls back to keyword rules.
+
 ## Outlook
 1. Azure portal → App registrations → New → "Accounts in any org directory + personal", enable *Allow public client flows*, add delegated permission `Calendars.ReadWrite`.
 2. Put the Application (client) ID in `MS_CLIENT_ID`. (A university tenant may require admin consent — if blocked, use a personal Outlook account or ask IT.)
