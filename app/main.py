@@ -68,8 +68,10 @@ def _twiml(text):
 async def whatsapp(request: Request):
     form = dict(await request.form())
     if not _valid_twilio(request, form):
+        print(f"403 bad signature: signed url was {PUBLIC_URL + request.url.path!r}; check PUBLIC_URL matches the Twilio webhook exactly and TWILIO_AUTH_TOKEN is this account's Auth Token")
         raise HTTPException(403, "bad signature")
     if ALLOWED_WHATSAPP and form.get("From") != ALLOWED_WHATSAPP:
+        print(f"403 sender not allowed: got {form.get('From')!r}")
         raise HTTPException(403, "sender not allowed")
     body = (form.get("Body") or "").strip()
     low = body.lower()
